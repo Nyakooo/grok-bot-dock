@@ -17,6 +17,7 @@ import (
 	"github.com/Nyakooo/grok-bot-dock/internal/events"
 	"github.com/Nyakooo/grok-bot-dock/internal/store"
 	"github.com/Nyakooo/grok-bot-dock/internal/webui"
+	"github.com/google/jsonschema-go/jsonschema"
 )
 
 func testHandler(t *testing.T, max int64) (http.Handler, *store.Store, *events.Hub) {
@@ -74,6 +75,35 @@ func TestMCPCapabilitiesRequireAuthenticationAndMatchRegisteredTools(t *testing.
 	for index, capability := range result.Tools {
 		if capability.Name != mcpToolCapabilities[index].Name || capability.Access == "" || capability.Description == "" || len(capability.Fields) == 0 || capability.Example == "" {
 			t.Errorf("capability %d does not match registered tool metadata: %#v", index, capability)
+		}
+		var schema *jsonschema.Schema
+		if index == 0 {
+			schema, _ = jsonschema.For[publishReportInput](nil)
+		} else {
+			schema, _ = jsonschema.For[searchReportsInput](nil)
+		}
+		if len(capability.Fields) != len(schema.Properties) {
+			t.Errorf("%s exposes %d field descriptions for %d schema properties", capability.Name, len(capability.Fields), len(schema.Properties))
+		}
+		var example map[string]json.RawMessage
+		if err := json.Unmarshal([]byte(capability.Example), &example); err != nil {
+			t.Errorf("%s example is not JSON: %v", capability.Name, err)
+		} else {
+			for property := range example {
+				if _, exists := schema.Properties[property]; !exists {
+					t.Errorf("%s example contains unknown property %q", capability.Name, property)
+				}
+			}
+			for _, property := range schema.Required {
+				if _, exists := example[property]; !exists {
+					t.Errorf("%s example omits required schema property %q", capability.Name, property)
+				}
+			}
+			if capability.Name == "search_reports" {
+				if _, exists := example["cursor"]; exists {
+					t.Error("search_reports example must not use a placeholder cursor")
+				}
+			}
 		}
 	}
 }

@@ -240,7 +240,7 @@ func (s *Server) api(w http.ResponseWriter, r *http.Request) {
 			"transport":      "Streamable HTTP",
 			"authentication": "Authorization: Bearer <ACCESS_TOKEN>",
 			"access_model":   "仅供服务所有者本人或受信任的单用户客户端；共享密钥不支持按客户端授权、撤销或多租户隔离",
-			"tools":          mcpToolCapabilities,
+			"tools":          capabilityMetadata(s.maxBytes),
 		})
 	case r.Method == "POST" && r.URL.Path == "/api/v1/reports":
 		s.createReport(w, r)

@@ -85,6 +85,7 @@ MCP 工具只提供发布及读取；没有增加删除、改名、任意 SQL、
 
 - 默认入口、标题和复制反馈使用「MCP 接入」「MCP 服务接入」；MCP 服务不依赖 Codex。客户端示例折叠在可选区域，`BOLT_DOCK_TOKEN` 仅在展开 Codex CLI 示例时出现。
 - 新增登录保护的 `GET /api/v1/mcp/capabilities`；UI 从实际服务端清单读取协议、共享 Bearer 认证、工具字段和无密钥示例参数，不根据页面打开状态声称服务在线。
+- 工具字段摘要和示例参数由 MCP 输入结构的 JSON Schema 生成；能力接口测试逐项核对 schema 字段数及示例字段，新增输入字段时页面清单会同步更新。发布工具完整列出来源、Bot/任务名称、标题、摘要、标签、头像地址及幂等字段。
 - 支持当前页面 origin/path 推导 `/mcp`，以及仅保存在当前浏览器的反向代理公开地址覆盖。localhost/内网地址显示网络可达性提示；未把私有地址称为公网可达。
 - 提供服务 URL、通用接入说明独立复制、三步接入指引、连接排查、密钥边界和 REST API 推送入口。共享 `ACCESS_TOKEN` 仅适合受信任的单用户私有接入；没有独立 Agent Token 管理。
 - 修改前截图：[`mcp-config-copied.png`](../output/playwright/p7/mcp-config-copied.png)。修改后浅色桌面：[`mcp-general-access-light-1440.png`](../output/playwright/p7/mcp-general-access-light-1440.png)；深色桌面：[`mcp-general-access-dark-1440.png`](../output/playwright/p7/mcp-general-access-dark-1440.png)；深色移动端：[`mcp-general-access-dark-375.png`](../output/playwright/p7/mcp-general-access-dark-375.png)。截图中的 URL 为本机隔离服务地址，不代表生产公开地址。
