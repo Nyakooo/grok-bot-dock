@@ -16,6 +16,33 @@ import (
 
 type mcpRemoteAddrKey struct{}
 
+type mcpToolCapability struct {
+	Name                string   `json:"name"`
+	Title               string   `json:"title"`
+	Description         string   `json:"description"`
+	ProtocolDescription string   `json:"-"`
+	Access              string   `json:"access"`
+	Fields              []string `json:"fields"`
+	Example             string   `json:"example"`
+}
+
+var mcpToolCapabilities = []mcpToolCapability{
+	{
+		Name: "publish_report", Title: "Publish final report", Access: "写入",
+		Description:         "提交已完成并确认的 Markdown 报告。写入报告，必要时创建 Bot；不会删除或重命名数据。",
+		ProtocolDescription: "Publish a completed, confirmed final Markdown report to Bolt Dock. Do not submit drafts, debug logs, intermediate results, or failed tasks. This writes a report and may create a Bot; it never deletes or renames data. Supply a stable bot_id or stable_task_id, and reuse external_id for retries. The server returns metadata only, not the report body.",
+		Fields:              []string{"executed_at：实际 RFC3339 完成时间", "content：完整 Markdown 正文", "bot_id 或 stable_task_id：稳定 Bot 身份", "external_id：可选，同次执行重试时保持一致"},
+		Example:             `{"stable_task_id":"task-identifier","executed_at":"2026-10-10T17:30:00+08:00","title":"最终报告标题","summary":"摘要","external_id":"execution-id","content":"# 完整报告正文"}`,
+	},
+	{
+		Name: "search_reports", Title: "Search report history", Access: "只读",
+		Description:         "按全文关键词查询历史报告，可按来源、Bot、日期筛选并使用游标分页。仅返回元数据和摘要。",
+		ProtocolDescription: "Search stored report history by full-text query, including Chinese, with optional source, Bot, date, and cursor filters. Read-only; returns report metadata and summaries, never full Markdown.",
+		Fields:              []string{"query：1–256 字符关键词", "source、bot_id、from、to：可选筛选项", "limit：默认 10，最大 20", "cursor：可选分页游标"},
+		Example:             `{"query":"关键词","limit":10}`,
+	},
+}
+
 type publishReportInput struct {
 	ExecutedAt   string   `json:"executed_at" jsonschema:"RFC3339 execution time of the completed report"`
 	Content      string   `json:"content" jsonschema:"Complete Markdown report; publish only a confirmed final report, never drafts, logs, intermediate results, or failed tasks"`
@@ -98,9 +125,9 @@ func (s *Server) newMCPHandler() http.Handler {
 		tags.Items.MaxLength = jsonschema.Ptr(128)
 	}
 	mcp.AddTool(server, &mcp.Tool{
-		Name:        "publish_report",
-		Title:       "Publish final report",
-		Description: "Publish a completed, confirmed final Markdown report to Bolt Dock. Do not submit drafts, debug logs, intermediate results, or failed tasks. This writes a report and may create a Bot; it never deletes or renames data. Supply a stable bot_id or stable_task_id, and reuse external_id for retries. The server returns metadata only, not the report body.",
+		Name:        mcpToolCapabilities[0].Name,
+		Title:       mcpToolCapabilities[0].Title,
+		Description: mcpToolCapabilities[0].ProtocolDescription,
 		InputSchema: publishSchema,
 		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: false, DestructiveHint: &nonDestructive, IdempotentHint: false, OpenWorldHint: &closedWorld},
 	}, s.handleMCPPublishReport)
@@ -122,9 +149,9 @@ func (s *Server) newMCPHandler() http.Handler {
 		limit.Maximum = jsonschema.Ptr(float64(20))
 	}
 	mcp.AddTool(server, &mcp.Tool{
-		Name:        "search_reports",
-		Title:       "Search report history",
-		Description: "Search stored report history by full-text query, including Chinese, with optional source, Bot, date, and cursor filters. Read-only; returns report metadata and summaries, never full Markdown.",
+		Name:        mcpToolCapabilities[1].Name,
+		Title:       mcpToolCapabilities[1].Title,
+		Description: mcpToolCapabilities[1].ProtocolDescription,
 		InputSchema: searchSchema,
 		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true, DestructiveHint: &nonDestructive, IdempotentHint: true, OpenWorldHint: &closedWorld},
 	}, s.handleMCPSearchReports)
