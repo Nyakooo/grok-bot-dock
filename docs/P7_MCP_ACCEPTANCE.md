@@ -132,6 +132,7 @@ MCP 接入对话框打开时焦点落在关闭按钮，Tab/Shift+Tab 在对话�
 | `docker build -t bolt-dock:p7-general-access .` | 通过；隔离容器 health 为 `{"status":"ok"}`。 |
 | Claude、Grok 与其他产品客户端 | 未验证具体产品和版本；不宣称兼容。 |
 | 用户生产 URL、HTTPS 反代、真实公网可达性及生产数据 | 未验证；未提供目标地址或部署主机。 |
-| PR、GitHub Actions、GHCR 新镜像 | 以本补充验收提交后 CI 和发布实际状态补记。 |
+| PR #17 | [feat: make MCP onboarding client-agnostic](https://github.com/Nyakooo/grok-bot-dock/pull/17)，提交 `17659428` 加 `15dfd4a`（Schema 字段/示例同步修复）；尚待合并。 |
+| PR GitHub Actions | [run 38042295065](https://github.com/Nyakooo/grok-bot-dock/actions/runs/38042295065)；`validate` 通过。GHCR master 发布需在合并后核验。 |
 
 验收结束后移除了本轮独立 Docker 容器与命名卷；Playwright 临时会话目录 `.playwright-cli/` 保留为本机未跟踪用户数据。
